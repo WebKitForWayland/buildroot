@@ -4,9 +4,8 @@
 #
 ################################################################################
 
-MESA3D_VERSION = 10.3.3
-MESA3D_SOURCE = MesaLib-$(MESA3D_VERSION).tar.bz2
-MESA3D_SITE = ftp://ftp.freedesktop.org/pub/mesa/$(MESA3D_VERSION)
+MESA3D_VERSION = 724f9e494e2ced259f3e613190dd7e208d4c4d36
+MESA3D_SITE = $(call github,WebKitForWayland,mesa,$(MESA3D_VERSION))
 MESA3D_LICENSE = MIT, SGI, Khronos
 MESA3D_LICENSE_FILES = docs/license.html
 MESA3D_AUTORECONF = YES
@@ -21,11 +20,11 @@ MESA3D_DEPENDENCIES = \
 	host-flex \
 	host-gettext \
 	host-python \
-	host-xutil_makedepend \
 	libdrm
 
 ifeq ($(BR2_PACKAGE_XORG7),y)
 MESA3D_DEPENDENCIES += \
+	host-xutil_makedepend \
 	xproto_xf86driproto \
 	xproto_dri2proto \
 	xproto_glproto \
