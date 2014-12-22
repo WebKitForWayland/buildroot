@@ -114,6 +114,7 @@ endif
 MESA3D_CONF_OPTS += \
 	--enable-gbm \
 	--enable-egl \
+	--enable-gallium-egl \
 	--with-egl-platforms=$(subst $(space),$(comma),$(MESA3D_EGL_PLATFORMS))
 else
 MESA3D_CONF_OPTS += \
