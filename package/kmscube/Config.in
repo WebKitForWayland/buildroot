@@ -1,0 +1,4 @@
+config BR2_PACKAGE_KMSCUBE
+	bool "kmscube"
+	help
+	  A spinning cube.
