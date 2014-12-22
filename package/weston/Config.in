@@ -33,12 +33,20 @@ config BR2_PACKAGE_WESTON
 
 if BR2_PACKAGE_WESTON
 
+config BR2_PACKAGE_WESTON_EGL
+	bool "EGL support"
+
 # Helper to make sure at least one compositor is selected.
 config BR2_PACKAGE_WESTON_HAS_COMPOSITOR
 	bool
 
 config BR2_PACKAGE_WESTON_FBDEV
 	bool "fbdev compositor"
+
+config BR2_PACKAGE_WESTON_DRM
+	bool "drm compositor"
+	select BR2_PACKAGE_LIBINPUT
+	select BR2_PACKAGE_WESTON_HAS_COMPOSITOR
 
 comment "RPi compositor needs a toolchain w/ C++, largefile, threads"
 	depends on BR2_arm
