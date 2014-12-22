@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-LINUX_FIRMWARE_VERSION = f66291398181d24856fd2d19454d246199abd5ea
-LINUX_FIRMWARE_SITE = http://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git
+LINUX_FIRMWARE_VERSION = 150dbc32b46e6e6d765f2e99a7d4c286485cd736
+LINUX_FIRMWARE_SITE = https://github.com/WebKitForWayland/linux-firmware.git
 LINUX_FIRMWARE_SITE_METHOD = git
 
 # Intel SST DSP
@@ -284,6 +284,17 @@ ifeq ($(BR2_PACKAGE_LINUX_FIRMWARE_BRCM_BCM43XXX),y)
 LINUX_FIRMWARE_FILES += brcm/brcmfmac43236b.bin brcm/brcmfmac43241b0-sdio.bin \
 			brcm/brcmfmac43241b4-sdio.bin brcm/brcmfmac43362-sdio.bin
 LINUX_FIRMWARE_ALL_LICENSE_FILES += LICENCE.broadcom_bcm43xx
+endif
+
+# gk20a
+ifeq ($(BR2_PACKAGE_LINUX_FIRMWARE_NVIDIA_GK20A),y)
+LINUX_FIRMWARE_FILES += nvidia/tegra124/gk20a_ctxsw.bin \
+	nouveau/nvea_fuc409c \
+	nouveau/nvea_fuc409d \
+	nouveau/nvea_fuc41ac \
+	nouveau/nvea_fuc41ad
+# No license file; the license is in the file WHENCE
+# which is installed unconditionally
 endif
 
 ifneq ($(LINUX_FIRMWARE_FILES),)

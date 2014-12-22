@@ -242,6 +242,11 @@ config BR2_PACKAGE_LINUX_FIRMWARE_XCx000
 	help
 	  Firmware file for xc4000/xc5000/xc5000c based DVB tuner driver
 
+config BR2_PACKAGE_LINUX_FIRMWARE_NVIDIA_GK20A
+	bool "NVIDIA GK20A"
+	help
+	  Firmware files for NVIDIA GK20A driver
+
 endmenu
 
 endif
