@@ -4,11 +4,12 @@
 #
 ################################################################################
 
-LIBDRM_VERSION = 2.4.58
-LIBDRM_SOURCE = libdrm-$(LIBDRM_VERSION).tar.bz2
-LIBDRM_SITE = http://dri.freedesktop.org/libdrm
+LIBDRM_VERSION = f99522e678dbbaffeca9462a8edcbe900574dc12
+LIBDRM_SITE = http://cgit.freedesktop.org/mesa/drm/snapshot
+LIBDRM_SOURCE = drm-$(LIBDRM_VERSION).tar.gz
 LIBDRM_LICENSE = MIT
 
+LIBDRM_AUTORECONF = YES
 LIBDRM_INSTALL_STAGING = YES
 
 LIBDRM_DEPENDENCIES = \
@@ -36,6 +37,12 @@ ifeq ($(BR2_PACKAGE_LIBDRM_NOUVEAU),y)
 LIBDRM_CONF_OPTS += --enable-nouveau
 else
 LIBDRM_CONF_OPTS += --disable-nouveau
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_TEGRA),y)
+LIBDRM_CONF_OPTS += --enable-tegra-experimental-api
+else
+LIBDRM_CONF_OPTS += --disable-tegra-experimental-api
 endif
 
 ifeq ($(BR2_PACKAGE_LIBDRM_VMWGFX),y)
