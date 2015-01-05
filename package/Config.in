@@ -913,6 +913,7 @@ menu "Other"
 	source "package/startup-notification/Config.in"
 	source "package/tz/Config.in"
 	source "package/tzdata/Config.in"
+	source "package/wpe-demos/Config.in"
 endmenu
 
 menu "Security"
