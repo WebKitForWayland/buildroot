@@ -4,9 +4,8 @@
 #
 ################################################################################
 
-LIBDRM_VERSION = f99522e678dbbaffeca9462a8edcbe900574dc12
-LIBDRM_SITE = http://cgit.freedesktop.org/mesa/drm/snapshot
-LIBDRM_SOURCE = drm-$(LIBDRM_VERSION).tar.gz
+LIBDRM_VERSION = 31d0c9cc982dacbb087b795636d4f6375a9734c3
+LIBDRM_SITE = $(call github,Gnurou,drm,$(LIBDRM_VERSION))
 LIBDRM_LICENSE = MIT
 
 LIBDRM_AUTORECONF = YES
