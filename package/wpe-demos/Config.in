@@ -1,0 +1,4 @@
+config BR2_PACKAGE_WPE_DEMOS
+	bool "wpe-demos"
+	help
+	  Here be dragons.
