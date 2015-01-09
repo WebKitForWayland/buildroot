@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-WESTON_VERSION = 920a0331cf5340942a9d39ac3b48ce207f7970b6
+WESTON_VERSION = 0498fa0c86b1074b64892a422bff5d13ab32f761
 WESTON_SITE = $(call github,zdobersek,weston,$(WESTON_VERSION))
 WESTON_LICENSE = MIT
 WESTON_LICENSE_FILES = COPYING
