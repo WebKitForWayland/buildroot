@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-WPE_VERSION = 16122014
+WPE_VERSION = 09012015
 WPE_SITE = https://github.com/WebKitForWayland/webkit/archive
 WPE_SOURCE = wpe-$(WPE_VERSION).tar.gz
 
