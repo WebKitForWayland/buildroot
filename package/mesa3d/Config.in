@@ -62,6 +62,14 @@ config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_SWRAST
 	  This is a software opengl implementation using the Gallium3D
 	  infrastructure.
 
+config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_FREEDRENO
+	bool "Gallium nouveau driver"
+	depends on BR2_arm
+	select BR2_PACKAGE_MESA3D_GALLIUM_DRIVER
+	select BR2_PACKAGE_LIBDRM_FREEDRENO
+	help
+	  Supports (all?) Adreno GPUs.
+
 comment "DRI drivers needs X.Org and a toolchain w/ dynamic library"
 	depends on BR2_PREFER_STATIC_LIB || !BR2_PACKAGE_XORG7
 
