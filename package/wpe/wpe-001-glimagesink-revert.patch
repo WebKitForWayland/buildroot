@@ -1,0 +1,635 @@
+diff --git a/Source/WebCore/PlatformWPE.cmake b/Source/WebCore/PlatformWPE.cmake
+index 3284212..2a6fc77 100644
+--- a/Source/WebCore/PlatformWPE.cmake
++++ b/Source/WebCore/PlatformWPE.cmake
+@@ -175,7 +175,6 @@ list(APPEND WebCore_LIBRARIES
+     ${GSTREAMER_APP_LIBRARIES}
+     ${GSTREAMER_AUDIO_LIBRARIES}
+     ${GSTREAMER_FFT_LIBRARIES}
+-    ${GSTREAMER_GL_LIBRARIES}
+     ${GSTREAMER_PBUTILS_LIBRARIES}
+     ${GSTREAMER_TAG_LIBRARIES}
+     ${GSTREAMER_VIDEO_LIBRARIES}
+@@ -202,7 +201,6 @@ list(APPEND WebCore_INCLUDE_DIRECTORIES
+     ${GSTREAMER_APP_INCLUDE_DIRS}
+     ${GSTREAMER_AUDIO_INCLUDE_DIRS}
+     ${GSTREAMER_FFT_INCLUDE_DIRS}
+-    ${GSTREAMER_GL_INCLUDE_DIRS}
+     ${GSTREAMER_PBUTILS_INCLUDE_DIRS}
+     ${GSTREAMER_TAG_INCLUDE_DIRS}
+     ${GSTREAMER_VIDEO_INCLUDE_DIRS}
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+index 9608022..572b7aa 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -187,6 +187,7 @@ MediaPlayerPrivateGStreamer::MediaPlayerPrivateGStreamer(MediaPlayer* player)
+     , m_seekTime(0)
+     , m_changingRate(false)
+     , m_endTime(numeric_limits<float>::infinity())
++    , m_isEndReached(false)
+     , m_isStreaming(false)
+     , m_mediaLocations(0)
+     , m_mediaLocationCurrentIndex(0)
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h
+index 7fe1046..f8cd125 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h
+@@ -193,6 +193,7 @@ private:
+     float m_seekTime;
+     bool m_changingRate;
+     float m_endTime;
++    bool m_isEndReached;
+     mutable bool m_isStreaming;
+     GstStructure* m_mediaLocations;
+     int m_mediaLocationCurrentIndex;
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.cpp
+index 023e903..44de756 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.cpp
+@@ -48,32 +48,6 @@
+ #include "TextureMapperGL.h"
+ #endif
+ 
+-#if USE(ACCELERATED_COMPOSITING) && USE(TEXTURE_MAPPER_GL) && PLATFORM(QT)
+-#define GL_GLEXT_PROTOTYPES
+-#include "OpenGLShims.h"
+-#endif
+-
+-#define WL_EGL_PLATFORM
+-
+-#if USE(OPENGL_ES_2)
+-#define GL_GLEXT_PROTOTYPES
+-#include <GLES2/gl2.h>
+-#include <GLES2/gl2ext.h>
+-#if GST_CHECK_VERSION(1, 3, 0)
+-#include <gst/gl/egl/gsteglimagememory.h>
+-#endif
+-#endif
+-
+-#define EGL_EGLEXT_PROTOTYPES
+-#include <EGL/egl.h>
+-
+-struct _EGLDetails {
+-    EGLDisplay display;
+-    EGLContext context;
+-    EGLSurface draw;
+-    EGLSurface read;
+-};
+-
+ GST_DEBUG_CATEGORY(webkit_media_player_debug);
+ #define GST_CAT_DEFAULT webkit_media_player_debug
+ 
+@@ -110,17 +84,11 @@ static void mediaPlayerPrivateRepaintCallback(WebKitVideoSink*, GstSample* sampl
+     playerPrivate->triggerRepaint(sample);
+ }
+ 
+-static void mediaPlayerPrivateDrainCallback(WebKitVideoSink*, MediaPlayerPrivateGStreamerBase* playerPrivate)
+-{
+-    playerPrivate->triggerDrain();
+-}
+-
+ MediaPlayerPrivateGStreamerBase::MediaPlayerPrivateGStreamerBase(MediaPlayer* player)
+     : m_player(player)
+     , m_fpsSink(0)
+     , m_readyState(MediaPlayer::HaveNothing)
+     , m_networkState(MediaPlayer::Empty)
+-    , m_isEndReached(false)
+     , m_sample(0)
+     , m_repaintHandler(0)
+     , m_volumeSignalHandler(0)
+@@ -136,10 +104,6 @@ MediaPlayerPrivateGStreamerBase::~MediaPlayerPrivateGStreamerBase()
+         m_repaintHandler = 0;
+     }
+ 
+-    if (m_drainHandler)
+-        g_signal_handler_disconnect(m_webkitVideoSink.get(), m_drainHandler);
+-    m_drainHandler = 0;
+-
+     g_mutex_clear(&m_sampleMutex);
+ 
+     if (m_sample)
+@@ -332,51 +296,6 @@ PassRefPtr<BitmapTexture> MediaPlayerPrivateGStreamerBase::updateTexture(Texture
+     RefPtr<BitmapTexture> texture = textureMapper->acquireTextureFromPool(size, GST_VIDEO_INFO_HAS_ALPHA(&videoInfo) ? BitmapTexture::SupportsAlpha : BitmapTexture::NoFlag);
+     GstBuffer* buffer = gst_sample_get_buffer(m_sample);
+ 
+-#if USE(OPENGL_ES_2) && GST_CHECK_VERSION(1, 1, 2)
+-    GstMemory *mem;
+-    if (gst_buffer_n_memory (buffer) >= 1) {
+-        if ((mem = gst_buffer_peek_memory (buffer, 0)) && gst_is_egl_image_memory (mem)) {
+-            guint n, i;
+-
+-            n = gst_buffer_n_memory (buffer);
+-
+-            LOG_MEDIA_MESSAGE("MediaPlayerPrivateGStreamerBase::updateTexture: buffer contains %d memories", n);
+-
+-            n = 1; // FIXME
+-            const BitmapTextureGL* textureGL = static_cast<const BitmapTextureGL*>(texture.get()); // FIXME
+-
+-            for (i = 0; i < n; i++) {
+-                mem = gst_buffer_peek_memory (buffer, i);
+-
+-                g_assert (gst_is_egl_image_memory (mem));
+-
+-                if (i == 0)
+-                    glActiveTexture (GL_TEXTURE0);
+-                else if (i == 1)
+-                    glActiveTexture (GL_TEXTURE1);
+-                else if (i == 2)
+-                    glActiveTexture (GL_TEXTURE2);
+-
+-                glBindTexture (GL_TEXTURE_2D, textureGL->id()); // FIXME
+-                glEGLImageTargetTexture2DOES (GL_TEXTURE_2D,
+-                    gst_egl_image_memory_get_image (mem));
+-
+-                m_orientation = gst_egl_image_memory_get_orientation (mem);
+-                if (m_orientation != GST_VIDEO_GL_TEXTURE_ORIENTATION_X_NORMAL_Y_NORMAL
+-                    && m_orientation != GST_VIDEO_GL_TEXTURE_ORIENTATION_X_NORMAL_Y_FLIP) {
+-                    LOG_ERROR("MediaPlayerPrivateGStreamerBase::updateTexture: invalid GstEGLImage orientation");
+-                }
+-                else
+-                  LOG_MEDIA_MESSAGE("MediaPlayerPrivateGStreamerBase::updateTexture: texture orientation is Y FLIP?: %d",
+-                      (m_orientation == GST_VIDEO_GL_TEXTURE_ORIENTATION_X_NORMAL_Y_FLIP));
+-            }
+-
+-            return texture;
+-        }
+-    }
+-
+-    return 0;
+-#else
+ #if GST_CHECK_VERSION(1, 1, 0)
+     GstVideoGLTextureUploadMeta* meta;
+     if ((meta = gst_buffer_get_video_gl_texture_upload_meta(buffer))) {
+@@ -403,8 +322,6 @@ PassRefPtr<BitmapTexture> MediaPlayerPrivateGStreamerBase::updateTexture(Texture
+     gst_video_frame_unmap(&videoFrame);
+ 
+     return texture;
+-#endif
+-    return 0;
+ }
+ #endif
+ 
+@@ -429,16 +346,6 @@ void MediaPlayerPrivateGStreamerBase::triggerRepaint(GstSample* sample)
+     m_player->repaint();
+ }
+ 
+-void MediaPlayerPrivateGStreamerBase::triggerDrain()
+-{
+-    GMutexLocker<GMutex> lock(m_sampleMutex);
+-    m_videoSize.setWidth(0);
+-    m_videoSize.setHeight(0);
+-    if (m_sample)
+-        gst_sample_unref(m_sample);
+-    m_sample = 0;
+-}
+-
+ void MediaPlayerPrivateGStreamerBase::setSize(const IntSize& size)
+ {
+     m_size = size;
+@@ -470,7 +377,7 @@ void MediaPlayerPrivateGStreamerBase::paint(GraphicsContext* context, const IntR
+ }
+ 
+ #if USE(TEXTURE_MAPPER_GL) && !USE(COORDINATED_GRAPHICS)
+-void MediaPlayerPrivateGStreamerBase::paintToTextureMapper(TextureMapper* textureMapper, const FloatRect& targetRect, const TransformationMatrix& modelViewMatrix, float opacity)
++void MediaPlayerPrivateGStreamerBase::paintToTextureMapper(TextureMapper* textureMapper, const FloatRect& targetRect, const TransformationMatrix& matrix, float opacity)
+ {
+     if (textureMapper->accelerationMode() != TextureMapper::OpenGLMode)
+         return;
+@@ -480,7 +387,7 @@ void MediaPlayerPrivateGStreamerBase::paintToTextureMapper(TextureMapper* textur
+ 
+     RefPtr<BitmapTexture> texture = updateTexture(textureMapper);
+     if (texture)
+-        textureMapper->drawTexture(*texture.get(), targetRect, modelViewMatrix, opacity);
++        textureMapper->drawTexture(*texture.get(), targetRect, matrix, opacity);
+ }
+ #endif
+ 
+@@ -513,7 +420,6 @@ GstElement* MediaPlayerPrivateGStreamerBase::createVideoSink()
+     m_webkitVideoSink = webkitVideoSinkNew();
+ 
+     m_repaintHandler = g_signal_connect(m_webkitVideoSink.get(), "repaint-requested", G_CALLBACK(mediaPlayerPrivateRepaintCallback), this);
+-    m_drainHandler = g_signal_connect(m_webkitVideoSink.get(), "drain", G_CALLBACK(mediaPlayerPrivateDrainCallback), this);
+ 
+     m_fpsSink = gst_element_factory_make("fpsdisplaysink", "sink");
+     if (m_fpsSink) {
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.h b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.h
+index e0af855..ea8497b 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.h
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.h
+@@ -42,12 +42,6 @@ typedef struct _GstMessage GstMessage;
+ typedef struct _GstStreamVolume GstStreamVolume;
+ typedef struct _WebKitVideoSink WebKitVideoSink;
+ 
+-typedef struct _GstMiniObject GstMiniObject;
+-
+-typedef struct _GstEGLImageMemoryPool GstEGLImageMemoryPool;
+-typedef struct _GstEGLImageMemory GstEGLImageMemory;
+-typedef struct _EGLDetails EGLDetails;
+-
+ namespace WebCore {
+ 
+ class GraphicsContext;
+@@ -83,8 +77,6 @@ public:
+     void setSize(const IntSize&);
+     void sizeChanged();
+ 
+-    void triggerDrain();
+-
+     void triggerRepaint(GstSample*);
+     void paint(GraphicsContext*, const IntRect&);
+ 
+@@ -129,7 +121,6 @@ protected:
+     GRefPtr<GstElement> m_fpsSink;
+     MediaPlayer::ReadyState m_readyState;
+     MediaPlayer::NetworkState m_networkState;
+-    bool m_isEndReached;
+     IntSize m_size;
+     mutable GMutex m_sampleMutex;
+     GstSample* m_sample;
+@@ -138,11 +129,9 @@ protected:
+     unsigned long m_repaintHandler;
+     unsigned long m_volumeSignalHandler;
+     unsigned long m_muteSignalHandler;
+-    unsigned long m_drainHandler;
+     mutable IntSize m_videoSize;
+ #if USE(TEXTURE_MAPPER_GL) && !USE(COORDINATED_GRAPHICS)
+     PassRefPtr<BitmapTexture> updateTexture(TextureMapper*);
+-    guint m_orientation;
+ #endif
+ };
+ }
+diff --git a/Source/WebCore/platform/graphics/gstreamer/TrackPrivateBaseGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/TrackPrivateBaseGStreamer.cpp
+index 016b582..36461be 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/TrackPrivateBaseGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/TrackPrivateBaseGStreamer.cpp
+@@ -57,8 +57,6 @@ TrackPrivateBaseGStreamer::TrackPrivateBaseGStreamer(TrackPrivateBase* owner, gi
+     : m_index(index)
+     , m_pad(pad)
+     , m_owner(owner)
+-    , m_activeTimerHandler("[WebKit] TrackPrivateBaseGStreamer::notifyTrackOfActiveChanged", std::function<void()>(std::bind(&TrackPrivateBaseGStreamer::notifyTrackOfActiveChanged, this)))
+-    , m_tagTimerHandler("[WebKit] TrackPrivateBaseGStreamer::notifyTrackOfTagsChanged", std::function<void()>(std::bind(&TrackPrivateBaseGStreamer::notifyTrackOfTagsChanged, this)))
+ {
+     ASSERT(m_pad);
+ 
+@@ -94,7 +92,7 @@ void TrackPrivateBaseGStreamer::disconnect()
+ 
+ void TrackPrivateBaseGStreamer::activeChanged()
+ {
+-    m_activeTimerHandler.schedule(std::chrono::milliseconds(0));
++    m_activeTimerHandler.schedule("[WebKit] TrackPrivateBaseGStreamer::notifyTrackOfActiveChanged", std::function<void()>(std::bind(&TrackPrivateBaseGStreamer::notifyTrackOfActiveChanged, this)));
+ }
+ 
+ void TrackPrivateBaseGStreamer::tagsChanged()
+@@ -108,7 +106,7 @@ void TrackPrivateBaseGStreamer::tagsChanged()
+         m_tags.swap(tags);
+     }
+ 
+-    m_tagTimerHandler.schedule(std::chrono::milliseconds(0));
++    m_tagTimerHandler.schedule("[WebKit] TrackPrivateBaseGStreamer::notifyTrackOfTagsChanged", std::function<void()>(std::bind(&TrackPrivateBaseGStreamer::notifyTrackOfTagsChanged, this)));
+ }
+ 
+ void TrackPrivateBaseGStreamer::notifyTrackOfActiveChanged()
+diff --git a/Source/WebCore/platform/graphics/gstreamer/TrackPrivateBaseGStreamer.h b/Source/WebCore/platform/graphics/gstreamer/TrackPrivateBaseGStreamer.h
+index d0b7b5b..9e68091 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/TrackPrivateBaseGStreamer.h
++++ b/Source/WebCore/platform/graphics/gstreamer/TrackPrivateBaseGStreamer.h
+@@ -70,8 +70,8 @@ private:
+     bool getTag(GstTagList* tags, const gchar* tagName, StringType& value);
+ 
+     TrackPrivateBase* m_owner;
+-    GMainLoopSource::Simple m_activeTimerHandler;
+-    GMainLoopSource::Simple m_tagTimerHandler;
++    GThreadSafeMainLoopSource m_activeTimerHandler;
++    GThreadSafeMainLoopSource m_tagTimerHandler;
+ 
+     Mutex m_tagMutex;
+     GRefPtr<GstTagList> m_tags;
+diff --git a/Source/WebCore/platform/graphics/gstreamer/VideoSinkGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/VideoSinkGStreamer.cpp
+index 450418a..ff8e883 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/VideoSinkGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/VideoSinkGStreamer.cpp
+@@ -35,47 +35,20 @@
+ #include <glib.h>
+ #include <gst/gst.h>
+ #include <gst/video/gstvideometa.h>
+-#include <wtf/Threading.h>
+ #include <wtf/OwnPtr.h>
+ #include <wtf/gobject/GMutexLocker.h>
+ #include <wtf/gobject/GSourceWrap.h>
+ 
+-#if USE(EGL)
+-#define WL_EGL_PLATFORM
+-#include <EGL/egl.h>
+-#include <EGL/eglext.h>
+-#endif
+-
+-#if USE(OPENGL_ES_2)
+-#include <GLES2/gl2.h>
+-#include <GLES2/gl2ext.h>
+-#if GST_CHECK_VERSION(1, 3, 0)
+-#include <gst/gl/egl/gsteglimagememory.h>
+-#include <gst/gl/gstglutils.h>
+-
+-#endif
+-#endif
+-
+ using namespace WebCore;
+ 
+ // CAIRO_FORMAT_RGB24 used to render the video buffers is little/big endian dependant.
+ #if G_BYTE_ORDER == G_LITTLE_ENDIAN
+-#if USE(OPENGL_ES_2) && GST_CHECK_VERSION(1, 3, 0)
+-#define GST_CAPS_FORMAT "{ RGBA }"
+-#else
+ #define GST_CAPS_FORMAT "{ BGRx, BGRA }"
+-#endif
+ #else
+ #define GST_CAPS_FORMAT "{ xRGB, ARGB }"
+ #endif
+-
+ #if GST_CHECK_VERSION(1, 1, 0)
+-#define GST_FEATURED_CAPS_GL GST_VIDEO_CAPS_MAKE_WITH_FEATURES(GST_CAPS_FEATURE_META_GST_VIDEO_GL_TEXTURE_UPLOAD_META, GST_CAPS_FORMAT) ";"
+-#if GST_CHECK_VERSION(1, 3, 0)
+-#define GST_FEATURED_CAPS GST_FEATURED_CAPS_GL GST_VIDEO_CAPS_MAKE_WITH_FEATURES(GST_CAPS_FEATURE_MEMORY_EGL_IMAGE, GST_CAPS_FORMAT) ";"
+-#else
+-#define GST_FEATURED_CAPS GST_FEATURED_CAPS_GL
+-#endif
++#define GST_FEATURED_CAPS GST_VIDEO_CAPS_MAKE_WITH_FEATURES(GST_CAPS_FEATURE_META_GST_VIDEO_GL_TEXTURE_UPLOAD_META, GST_CAPS_FORMAT) ";"
+ #else
+ #define GST_FEATURED_CAPS
+ #endif
+@@ -90,7 +63,6 @@ GST_DEBUG_CATEGORY_STATIC(webkitVideoSinkDebug);
+ 
+ enum {
+     REPAINT_REQUESTED,
+-    DRAIN,
+     LAST_SIGNAL
+ };
+ 
+@@ -103,35 +75,12 @@ struct _WebKitVideoSinkPrivate {
+         g_mutex_init(&sampleMutex);
+         g_cond_init(&dataCondition);
+         gst_video_info_init(&info);
+-
+-#if USE(OPENGL_ES_2) && GST_CHECK_VERSION(1, 3, 0)
+-        pool = NULL;
+-        last_buffer = NULL;
+-
+-        allocateCondition = g_new0(GCond, 1);
+-        g_cond_init(allocateCondition);
+-        allocateMutex = g_new0(GMutex, 1);
+-        g_mutex_init(allocateMutex);
+-        allocateBuffer = NULL;
+-#endif
+     }
+ 
+     ~_WebKitVideoSinkPrivate()
+     {
+         g_mutex_clear(&sampleMutex);
+         g_cond_clear(&dataCondition);
+-
+-#if USE(OPENGL_ES_2) && GST_CHECK_VERSION(1, 3, 0)
+-        if (allocateCondition) {
+-            g_cond_clear(allocateCondition);
+-            g_free(allocateCondition);
+-        }
+-
+-        if (allocateMutex) {
+-            g_mutex_clear(allocateMutex);
+-            g_free(allocateMutex);
+-        }
+-#endif
+     }
+ 
+     GstSample* sample;
+@@ -152,44 +101,11 @@ struct _WebKitVideoSinkPrivate {
+     //
+     // Protected by the sample mutex
+     bool unlocked;
+-
+-#if USE(OPENGL_ES_2) && GST_CHECK_VERSION(1, 3, 0)
+-    GstBufferPool *pool;
+-    GstBuffer *last_buffer;
+-
+-    GstGLDisplay *display;
+-    GstGLContext *context;
+-    GstGLContext *other_context;
+-
+-    GCond* allocateCondition;
+-    GMutex* allocateMutex;
+-    GstBuffer* allocateBuffer;
+-#endif
+ };
+ 
+ #define webkit_video_sink_parent_class parent_class
+ G_DEFINE_TYPE_WITH_CODE(WebKitVideoSink, webkit_video_sink, GST_TYPE_VIDEO_SINK, GST_DEBUG_CATEGORY_INIT(webkitVideoSinkDebug, "webkitsink", 0, "webkit video sink"));
+ 
+-static gboolean _ensure_gl_setup(WebKitVideoSink* gl_sink)
+-{
+-    GError* error = NULL;
+-
+-    if (!gst_gl_ensure_display(gl_sink, &gl_sink->priv->display))
+-        return FALSE;
+-
+-    if (!gl_sink->priv->context) {
+-        gl_sink->priv->context = gst_gl_context_new(gl_sink->priv->display);
+-
+-        if (!gst_gl_context_create(gl_sink->priv->context, gl_sink->priv->other_context, &error)) {
+-            GST_ELEMENT_ERROR(gl_sink, RESOURCE, NOT_FOUND, ("%s", error->message), (NULL));
+-            gst_object_unref(gl_sink->priv->context);
+-            gl_sink->priv->context = NULL;
+-            return FALSE;
+-        }
+-    }
+-
+-    return TRUE;
+-}
+ 
+ static void webkit_video_sink_init(WebKitVideoSink* sink)
+ {
+@@ -367,8 +283,7 @@ static gboolean webkitVideoSinkStop(GstBaseSink* baseSink)
+ 
+ static gboolean webkitVideoSinkStart(GstBaseSink* baseSink)
+ {
+-    WebKitVideoSink* sink = reinterpret_cast_ptr<WebKitVideoSink*>(baseSink);
+-    WebKitVideoSinkPrivate* priv = sink->priv;
++    WebKitVideoSinkPrivate* priv = WEBKIT_VIDEO_SINK(baseSink)->priv;
+ 
+     GMutexLocker<GMutex> lock(priv->sampleMutex);
+     priv->unlocked = false;
+@@ -396,129 +311,23 @@ static gboolean webkitVideoSinkSetCaps(GstBaseSink* baseSink, GstCaps* caps)
+ 
+ static gboolean webkitVideoSinkProposeAllocation(GstBaseSink* baseSink, GstQuery* query)
+ {
+-    WebKitVideoSink* sink = WEBKIT_VIDEO_SINK(baseSink);
+-    GstCaps* caps = NULL;
+-    gboolean need_pool;
+-
+-    gst_query_parse_allocation(query, &caps, &need_pool);
++    GstCaps* caps;
++    gst_query_parse_allocation(query, &caps, 0);
+     if (!caps)
+         return FALSE;
+ 
++    WebKitVideoSink* sink = WEBKIT_VIDEO_SINK(baseSink);
+     if (!gst_video_info_from_caps(&sink->priv->info, caps))
+         return FALSE;
+ 
+-#if USE(OPENGL_ES_2) && GST_CHECK_VERSION(1, 3, 0)
+-    // Code adapted from gst-plugins-bad's glimagesink.
+-
+-    GstBufferPool* pool;
+-    GstStructure* config;
+-    guint size;
+-    GstAllocator* allocator = 0;
+-    GstAllocationParams params;
+-
+-    if (!_ensure_gl_setup(sink))
+-        return FALSE;
+-
+-    if ((pool = sink->priv->pool))
+-        gst_object_ref(pool);
+-
+-    if (pool) {
+-        GstCaps* pcaps;
+-
+-        // We had a pool, check its caps.
+-        GST_DEBUG_OBJECT (sink, "check existing pool caps");
+-        config = gst_buffer_pool_get_config(pool);
+-        gst_buffer_pool_config_get_params(config, &pcaps, &size, 0, 0);
+-
+-        if (!gst_caps_is_equal(caps, pcaps)) {
+-            GST_DEBUG_OBJECT(sink, "pool has different caps");
+-            // Different caps, we can't use this pool.
+-            gst_object_unref(pool);
+-            pool = 0;
+-        }
+-        gst_structure_free(config);
+-    }
+-
+-    if (need_pool && !pool) {
+-        GstVideoInfo info;
+-
+-        if (!gst_video_info_from_caps(&info, caps)) {
+-            GST_DEBUG_OBJECT(sink, "invalid caps specified");
+-            return FALSE;
+-        }
+-
+-        GST_DEBUG_OBJECT(sink, "create new pool");
+-        pool = gst_gl_buffer_pool_new(sink->priv->context);
+-
+-        // The normal size of a frame.
+-        size = info.size;
+-
+-        config = gst_buffer_pool_get_config(pool);
+-        gst_buffer_pool_config_set_params(config, caps, size, 0, 0);
+-        if (!gst_buffer_pool_set_config(pool, config)) {
+-            GST_DEBUG_OBJECT(sink, "failed setting config");
+-            return FALSE;
+-        }
+-    }
+-
+-    // We need at least 2 buffer because we hold on to the last one.
+-    if (pool) {
+-        gst_query_add_allocation_pool(query, pool, size, 2, 0);
+-        gst_object_unref(pool);
+-    }
+-
+-    gst_query_add_allocation_meta(query, GST_VIDEO_META_API_TYPE, 0);
+-
+-    gst_allocation_params_init(&params);
+-    allocator = gst_allocator_find(GST_EGL_IMAGE_MEMORY_TYPE);
+-    gst_query_add_allocation_param(query, allocator, &params);
+-    gst_object_unref(allocator);
+-#else
+     gst_query_add_allocation_meta(query, GST_VIDEO_META_API_TYPE, 0);
+     gst_query_add_allocation_meta(query, GST_VIDEO_CROP_META_API_TYPE, 0);
++#if GST_CHECK_VERSION(1, 1, 0)
+     gst_query_add_allocation_meta(query, GST_VIDEO_GL_TEXTURE_UPLOAD_META_API_TYPE, 0);
+ #endif
+     return TRUE;
+ }
+ 
+-static gboolean webkitVideoSinkQuery(GstBaseSink* baseSink, GstQuery* query)
+-{
+-    WebKitVideoSink* sink = WEBKIT_VIDEO_SINK(baseSink);
+-    WebKitVideoSinkPrivate* priv = sink->priv;
+-
+-    switch (GST_QUERY_TYPE(query)) {
+-    case GST_QUERY_DRAIN:
+-    {
+-#if USE(OPENGL_ES_2) && GST_CHECK_VERSION(1, 3, 0)
+-        GST_OBJECT_LOCK (sink);
+-        if (priv->last_buffer)
+-            gst_buffer_replace (&priv->last_buffer, NULL);
+-        g_signal_emit(sink, webkitVideoSinkSignals[DRAIN], 0);
+-        GST_OBJECT_UNLOCK (sink);
+-#endif
+-        return TRUE;
+-    }
+-    case GST_QUERY_CONTEXT:
+-    {
+-        return gst_gl_handle_context_query(GST_ELEMENT(sink), query, &priv->display);
+-      break;
+-    }
+-    default:
+-        return GST_CALL_PARENT_WITH_DEFAULT(GST_BASE_SINK_CLASS, query, (baseSink, query), TRUE);
+-      break;
+-    }
+-}
+-
+-#if GST_CHECK_VERSION(1, 3, 0)
+-static void
+-webkitVideoSinkSetContext(GstElement* element, GstContext* context)
+-{
+-    WebKitVideoSink* sink =  WEBKIT_VIDEO_SINK(element);
+-
+-    gst_gl_handle_set_context(element, context, &sink->priv->display);
+-}
+-#endif
+-
+ static void webkit_video_sink_class_init(WebKitVideoSinkClass* klass)
+ {
+     GObjectClass* gobjectClass = G_OBJECT_CLASS(klass);
+@@ -540,11 +349,6 @@ static void webkit_video_sink_class_init(WebKitVideoSinkClass* klass)
+     baseSinkClass->start = webkitVideoSinkStart;
+     baseSinkClass->set_caps = webkitVideoSinkSetCaps;
+     baseSinkClass->propose_allocation = webkitVideoSinkProposeAllocation;
+-    baseSinkClass->query = webkitVideoSinkQuery;
+-
+-#if GST_CHECK_VERSION(1, 3, 0)
+-    elementClass->set_context = webkitVideoSinkSetContext;
+-#endif
+ 
+     webkitVideoSinkSignals[REPAINT_REQUESTED] = g_signal_new("repaint-requested",
+             G_TYPE_FROM_CLASS(klass),
+@@ -556,17 +360,6 @@ static void webkit_video_sink_class_init(WebKitVideoSinkClass* klass)
+             G_TYPE_NONE, // Return type
+             1, // Only one parameter
+             GST_TYPE_SAMPLE);
+-
+-    webkitVideoSinkSignals[DRAIN] = g_signal_new("drain",
+-            G_TYPE_FROM_CLASS(klass),
+-            static_cast<GSignalFlags>(G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+-            0, // Class offset
+-            0, // Accumulator
+-            0, // Accumulator data
+-            g_cclosure_marshal_generic,
+-            G_TYPE_NONE, // Return type
+-            0 // No parameters
+-            );
+ }
+ 
+ 
+diff --git a/Source/cmake/OptionsWPE.cmake b/Source/cmake/OptionsWPE.cmake
+index 560f099..c8b3970 100644
+--- a/Source/cmake/OptionsWPE.cmake
++++ b/Source/cmake/OptionsWPE.cmake
+@@ -75,7 +75,7 @@ if (ATHOL_FOUND)
+ endif ()
+ 
+ if (ENABLE_VIDEO)
+-    set(GSTREAMER_COMPONENTS app audio fft gl pbutils tag video)
++    set(GSTREAMER_COMPONENTS app audio fft pbutils tag video)
+     add_definitions(-DWTF_USE_GSTREAMER)
+ 
+     find_package(GStreamer 1.4.1 REQUIRED COMPONENTS ${GSTREAMER_COMPONENTS})
