@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-MESA3D_VERSION = 7541264a628fc08eaccc7089ecd6e6a4f6a9b05d
-MESA3D_SITE = $(call github,zdobersek,mesa,$(MESA3D_VERSION))
+MESA3D_VERSION = 5e1b1d7136006e84cf4b0406e5f5f79754619959
+MESA3D_SITE = $(call github,WebKitForWayland,mesa,$(MESA3D_VERSION))
 MESA3D_LICENSE = MIT, SGI, Khronos
 MESA3D_LICENSE_FILES = docs/license.html
 MESA3D_AUTORECONF = YES
@@ -20,6 +20,7 @@ MESA3D_DEPENDENCIES = \
 	host-flex \
 	host-gettext \
 	host-python \
+	host-python-mako \
 	libdrm
 
 ifeq ($(BR2_PACKAGE_XORG7),y)
