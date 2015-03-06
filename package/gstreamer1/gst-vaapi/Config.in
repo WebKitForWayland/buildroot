@@ -1,0 +1,4 @@
+config BR2_PACKAGE_GST_VAAPI
+	bool "gst-vaapi"
+	depends on BR2_PACKAGE_LIBVA
+	select BR2_PACKAGE_GST1_PLUGINS_BASE
