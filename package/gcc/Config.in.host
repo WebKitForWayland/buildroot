@@ -30,8 +30,9 @@ choice
 		depends on !BR2_cortex_a7 && !BR2_cortex_a12 && \
 			!BR2_cortex_a15 && !BR2_fa526 && !BR2_pj4
 		# Broken or unsupported PPC cores
-		depends on !BR2_powerpc_power8
-		# SPARC -mcpu=leon3 appeared in gcc 4.8.3
+		depends on !BR2_powerpc_e5500 && !BR2_powerpc_e6500 && \
+			!BR2_powerpc_power8
+		# SPARC -mcpu=leon3 appeared in gcc 4.8.x
 		depends on !BR2_sparc_leon3
 		# Broken or unsupported X86 cores
 		depends on !BR2_x86_corei7 && !BR2_x86_jaguar
@@ -49,8 +50,9 @@ choice
 		# Broken or unsupported ARM cores
 		depends on !BR2_cortex_a12 && !BR2_pj4
 		# Broken or unsupported PPC cores
-		depends on !BR2_powerpc_power8
-		# SPARC -mcpu=leon3 appeared in gcc 4.8.3
+		depends on !BR2_powerpc_e5500 && !BR2_powerpc_e6500 && \
+			!BR2_powerpc_power8
+		# SPARC -mcpu=leon3 appeared in gcc 4.8.x
 		depends on !BR2_sparc_leon3
 		# Broken or unsupported x86 cores
 		depends on !BR2_x86_jaguar
@@ -93,9 +95,9 @@ config BR2_GCC_VERSION
 	default "4.2.2-avr32-2.1.5" if BR2_GCC_VERSION_4_2_2_AVR32_2_1_5
 	default "4.5.4"     if BR2_GCC_VERSION_4_5_X
 	default "4.7.4"     if BR2_GCC_VERSION_4_7_X
-	default "4.8.3"     if BR2_GCC_VERSION_4_8_X
+	default "4.8.4"     if BR2_GCC_VERSION_4_8_X
 	default "4.9.2"     if BR2_GCC_VERSION_4_9_X
-	default "arc-2014.08" if BR2_GCC_VERSION_4_8_ARC
+	default "arc-2014.12" if BR2_GCC_VERSION_4_8_ARC
 
 config BR2_EXTRA_GCC_CONFIG_OPTIONS
 	string "Additional gcc options"
@@ -117,25 +119,6 @@ config BR2_TOOLCHAIN_BUILDROOT_CXX
 
 comment "C++ support broken in uClibc with locale enabled with gcc 4.2"
 	depends on BR2_GCC_VERSION_4_2_2_AVR32_2_1_5 && BR2_TOOLCHAIN_BUILDROOT_LOCALE
-
-config BR2_INSTALL_OBJC
-	bool "Enable Objective-C support"
-	depends on !BR2_avr32
-	depends on BR2_DEPRECATED_SINCE_2013_11
-	help
-	  Enable the support for the Objective-C language in the
-	  cross-compiler, and install the Objective-C runtime to the
-	  target.
-
-config BR2_INSTALL_FORTRAN
-	bool "Enable Fortran support"
-	depends on !BR2_avr32
-	depends on BR2_DEPRECATED_SINCE_2013_11
-	select BR2_PACKAGE_LIBMPFR
-	help
-	  Enable the support for the Fortran language in the
-	  cross-compiler, and install the Fortran runtime to the
-	  target.
 
 config BR2_GCC_ENABLE_TLS
 	bool "Enable compiler tls support" if BR2_TOOLCHAIN_BUILDROOT_UCLIBC

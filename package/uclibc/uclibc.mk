@@ -40,10 +40,10 @@ endif
 UCLIBC_KCONFIG_FILE = $(UCLIBC_CONFIG_FILE)
 
 UCLIBC_KCONFIG_OPTS = \
-		$(UCLIBC_MAKE_FLAGS) \
-		PREFIX=$(STAGING_DIR) \
-		DEVEL_PREFIX=/usr/ \
-		RUNTIME_PREFIX=$(STAGING_DIR)/ \
+	$(UCLIBC_MAKE_FLAGS) \
+	PREFIX=$(STAGING_DIR) \
+	DEVEL_PREFIX=/usr/ \
+	RUNTIME_PREFIX=$(STAGING_DIR)/ \
 
 UCLIBC_TARGET_ARCH = $(call qstrip,$(BR2_UCLIBC_TARGET_ARCH))
 
@@ -54,8 +54,9 @@ ifeq ($(UCLIBC_GENERATE_LOCALES),)
 UCLIBC_LOCALES = en_US
 else
 # Strip out the encoding part of locale names, if any
-UCLIBC_LOCALES = $(foreach locale,$(UCLIBC_GENERATE_LOCALES),\
-		   $(firstword $(subst .,$(space),$(locale))))
+UCLIBC_LOCALES = \
+	$(foreach locale,$(UCLIBC_GENERATE_LOCALES),\
+	$(firstword $(subst .,$(space),$(locale))))
 endif
 
 #
@@ -398,7 +399,7 @@ endif
 # static/shared libs
 #
 
-ifeq ($(BR2_PREFER_STATIC_LIB),y)
+ifeq ($(BR2_STATIC_LIBS),y)
 UCLIBC_SHARED_LIBS_CONFIG = $(call KCONFIG_DISABLE_OPT,HAVE_SHARED,$(@D)/.config)
 else
 UCLIBC_SHARED_LIBS_CONFIG = $(call KCONFIG_ENABLE_OPT,HAVE_SHARED,$(@D)/.config)
@@ -510,7 +511,7 @@ define UCLIBC_INSTALL_TARGET_CMDS
 endef
 
 # STATIC has no ld* tools, only getconf
-ifeq ($(BR2_PREFER_STATIC_LIB),)
+ifeq ($(BR2_STATIC_LIBS),)
 define UCLIBC_INSTALL_UTILS_STAGING
 	$(INSTALL) -D -m 0755 $(@D)/utils/ldd.host $(HOST_DIR)/usr/bin/ldd
 	ln -sf ldd $(HOST_DIR)/usr/bin/$(GNU_TARGET_NAME)-ldd

@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-XSERVER_XORG_SERVER_VERSION = 1.16.1
+XSERVER_XORG_SERVER_VERSION = 1.16.4
 XSERVER_XORG_SERVER_SOURCE = xorg-server-$(XSERVER_XORG_SERVER_VERSION).tar.bz2
 XSERVER_XORG_SERVER_SITE = http://xorg.freedesktop.org/releases/individual/xserver
 XSERVER_XORG_SERVER_LICENSE = MIT
@@ -54,12 +54,15 @@ XSERVER_XORG_SERVER_DEPENDENCIES = 	\
 	mcookie 			\
 	host-pkgconf
 
-XSERVER_XORG_SERVER_CONF_OPTS = --disable-config-hal \
-		--disable-xnest --disable-xephyr --disable-dmx \
-		--with-builder-addr=buildroot@buildroot.org \
-		CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include/pixman-1" \
-		--with-fontrootdir=/usr/share/fonts/X11/ \
-		--$(if $(BR2_PACKAGE_XSERVER_XORG_SERVER_XVFB),en,dis)able-xvfb
+XSERVER_XORG_SERVER_CONF_OPTS = \
+	--disable-config-hal \
+	--disable-xnest \
+	--disable-xephyr \
+	--disable-dmx \
+	--with-builder-addr=buildroot@buildroot.org \
+	CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include/pixman-1" \
+	--with-fontrootdir=/usr/share/fonts/X11/ \
+	--$(if $(BR2_PACKAGE_XSERVER_XORG_SERVER_XVFB),en,dis)able-xvfb
 
 ifeq ($(BR2_PACKAGE_XSERVER_XORG_SERVER_MODULAR),y)
 XSERVER_XORG_SERVER_CONF_OPTS += --enable-xorg
@@ -69,8 +72,12 @@ XSERVER_XORG_SERVER_CONF_OPTS += --disable-xorg
 endif
 
 ifeq ($(BR2_PACKAGE_XSERVER_XORG_SERVER_KDRIVE),y)
-XSERVER_XORG_SERVER_CONF_OPTS += --enable-kdrive --enable-xfbdev \
-		--disable-glx --disable-dri --disable-xsdl
+XSERVER_XORG_SERVER_CONF_OPTS += \
+	--enable-kdrive \
+	--enable-xfbdev \
+	--disable-glx \
+	--disable-dri \
+	--disable-xsdl
 define XSERVER_CREATE_X_SYMLINK
 	ln -f -s Xfbdev $(TARGET_DIR)/usr/bin/X
 endef
@@ -103,12 +110,6 @@ XSERVER_XORG_SERVER_CONF_OPTS += --enable-dri --enable-glx
 XSERVER_XORG_SERVER_DEPENDENCIES += mesa3d xproto_xf86driproto
 else
 XSERVER_XORG_SERVER_CONF_OPTS += --disable-dri --disable-glx
-endif
-
-ifeq ($(BR2_PACKAGE_XSERVER_XORG_SERVER_NULL_CURSOR),y)
-XSERVER_XORG_SERVER_CONF_OPTS += --enable-null-root-cursor
-else
-XSERVER_XORG_SERVER_CONF_OPTS += --disable-null-root-cursor
 endif
 
 ifeq ($(BR2_PACKAGE_XSERVER_XORG_SERVER_AIGLX),y)
@@ -144,10 +145,9 @@ ifeq ($(BR2_PACKAGE_FREETYPE),y)
 XSERVER_XORG_SERVER_DEPENDENCIES += freetype
 endif
 
-# libunwind support is broken on mips64
-# https://bugs.freedesktop.org/show_bug.cgi?id=79939
-ifeq ($(BR2_PACKAGE_LIBUNWIND)-$(BR2_mips64el),y-)
+ifeq ($(BR2_PACKAGE_LIBUNWIND),y)
 XSERVER_XORG_SERVER_DEPENDENCIES += libunwind
+XSERVER_XORG_SERVER_CONF_OPTS += --enable-libunwind
 else
 XSERVER_XORG_SERVER_CONF_OPTS += --disable-libunwind
 endif
