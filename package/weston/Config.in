@@ -2,7 +2,7 @@ comment "weston needs udev and a toolchain w/ threads, dynamic library, headers 
 	depends on !BR2_avr32
 	depends on BR2_ARCH_HAS_ATOMICS
 	depends on !BR2_PACKAGE_HAS_UDEV || !BR2_TOOLCHAIN_HAS_THREADS || \
-		!BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_0 || BR2_PREFER_STATIC_LIB
+		!BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_0 || BR2_STATIC_LIBS
 
 config BR2_PACKAGE_WESTON
 	bool "weston"
@@ -15,7 +15,7 @@ config BR2_PACKAGE_WESTON
 	select BR2_PACKAGE_MTDEV
 	depends on BR2_PACKAGE_HAS_UDEV
 	depends on !BR2_avr32 # wayland
-	depends on !BR2_PREFER_STATIC_LIB # wayland
+	depends on !BR2_STATIC_LIBS # wayland
 	depends on BR2_TOOLCHAIN_HAS_THREADS # wayland
 	depends on BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_0
 	depends on BR2_ARCH_HAS_ATOMICS # cairo
@@ -48,17 +48,10 @@ config BR2_PACKAGE_WESTON_DRM
 	select BR2_PACKAGE_LIBINPUT
 	select BR2_PACKAGE_WESTON_HAS_COMPOSITOR
 
-comment "RPi compositor needs a toolchain w/ C++, largefile, threads"
-	depends on BR2_arm
-	depends on !BR2_INSTALL_LIBSTDCPP || !BR2_LARGEFILE || !BR2_TOOLCHAIN_HAS_THREADS
-
+# rpi-userland is an EGL/GLES provider, so we can't select it
 config BR2_PACKAGE_WESTON_RPI
 	bool "RPi compositor"
-	depends on BR2_arm                      # rpi-userland
-	depends on BR2_INSTALL_LIBSTDCPP        # rpi-userland
-	depends on BR2_LARGEFILE                # rpi-userland
-	depends on BR2_TOOLCHAIN_HAS_THREADS    # rpi-userland
-	select BR2_PACKAGE_RPI_USERLAND
+	depends on BR2_PACKAGE_RPI_USERLAND
 	select BR2_PACKAGE_WESTON_HAS_COMPOSITOR
 
 endif

@@ -37,7 +37,7 @@ endef
 ifeq ($(ARCH),powerpc)
 ifneq ($(BR2_SOFT_FLOAT),)
 define HOST_GCC_APPLY_POWERPC_PATCH
-	$(APPLY_PATCHES) $(@D) package/gcc/$(GCC_VERSION) powerpc-link-with-math-lib.patch.conditional
+	$(APPLY_PATCHES) $(@D) package/gcc/$(GCC_VERSION) 1000-powerpc-link-with-math-lib.patch.conditional
 endef
 endif
 endif
@@ -108,6 +108,11 @@ HOST_GCC_COMMON_CONF_OPTS += --disable-target-optspace
 endif
 else
 HOST_GCC_COMMON_CONF_OPTS += --enable-target-optspace
+endif
+
+# libitm needs sparc V9+
+ifeq ($(BR2_sparc_v8)$(BR2_sparc_leon3),y)
+HOST_GCC_COMMON_CONF_OPTS += --disable-libitm
 endif
 
 # gcc 4.6.x quadmath requires wchar
