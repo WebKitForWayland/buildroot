@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-MESA3D_VERSION = 863e3d7b3a87b32e3add107aac4e5095a1de2073
+MESA3D_VERSION = 3ecbca3f3a25aeade7e6c973f377130c0fe1f2a1
 MESA3D_SITE = $(call github,WebKitForWayland,mesa,$(MESA3D_VERSION))
 MESA3D_LICENSE = MIT, SGI, Khronos
 MESA3D_LICENSE_FILES = docs/license.html
