@@ -4,7 +4,7 @@
 #
 #############################################################
 
-MONO_VERSION = 3.10.0
+MONO_VERSION = 3.12.0
 MONO_SITE = http://download.mono-project.com/sources/mono/
 MONO_SOURCE = mono-$(MONO_VERSION).tar.bz2
 MONO_LICENSE = GPLv2 or MIT (compiler, tools), LGPLv2 (runtime libs), MIT (class libs) or commercial
@@ -24,7 +24,8 @@ MONO_CONF_OPTS = --disable-gtk-doc \
 	--disable-libraries \
 	--with-ikvm-native=no \
 	--enable-minimal=aot,profiler,debug \
-	--disable-mcs-build
+	--disable-mcs-build \
+	--enable-static
 
 # The libraries have been built by the host-mono build. Since they are
 # architecture-independent, we simply copy them to the target.

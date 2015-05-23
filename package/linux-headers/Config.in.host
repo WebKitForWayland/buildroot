@@ -5,7 +5,7 @@ comment "Kernel Header Options"
 
 choice
 	prompt "Kernel Headers"
-	default BR2_KERNEL_HEADERS_3_17
+	default BR2_KERNEL_HEADERS_3_18
 	help
 	  Select the version of kernel header files you wish to use.
 	  You must select the correct set of header files to match
@@ -56,6 +56,7 @@ choice
 
 	config BR2_KERNEL_HEADERS_3_16
 		bool "Linux 3.16.x kernel headers"
+		depends on BR2_DEPRECATED_SINCE_2015_02
 		select BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_16
 
 	config BR2_KERNEL_HEADERS_3_17
@@ -179,13 +180,13 @@ endchoice
 config BR2_DEFAULT_KERNEL_HEADERS
 	string
 	default "3.0.101"	if BR2_KERNEL_HEADERS_3_0
-	default "3.2.64"	if BR2_KERNEL_HEADERS_3_2
-	default "3.4.104"	if BR2_KERNEL_HEADERS_3_4
-	default "3.10.61"	if BR2_KERNEL_HEADERS_3_10
+	default "3.2.66"	if BR2_KERNEL_HEADERS_3_2
+	default "3.4.106"	if BR2_KERNEL_HEADERS_3_4
+	default "3.10.68"	if BR2_KERNEL_HEADERS_3_10
 	default "3.11.10"	if BR2_KERNEL_HEADERS_3_11
-	default "3.12.33"	if BR2_KERNEL_HEADERS_3_12
+	default "3.12.37"	if BR2_KERNEL_HEADERS_3_12
 	default "3.13.11"	if BR2_KERNEL_HEADERS_3_13
-	default "3.14.25"	if BR2_KERNEL_HEADERS_3_14
+	default "3.14.32"	if BR2_KERNEL_HEADERS_3_14
 	default "3.15.10"	if BR2_KERNEL_HEADERS_3_15
 	default "3.16.7"	if BR2_KERNEL_HEADERS_3_16
 	default "3.17.4"	if BR2_KERNEL_HEADERS_3_17
