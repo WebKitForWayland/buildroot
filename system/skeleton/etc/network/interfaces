@@ -1,6 +1,3 @@
 # Configure Loopback
 auto lo
 iface lo inet loopback
-
-auto enp1s0
-iface enp1s0 inet dhcp
