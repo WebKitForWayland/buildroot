@@ -1,4 +1,5 @@
-# Some additional tasks required.
+# Misc
+BR2_SYSTEM_DHCP="enp1s0"
 BR2_ROOTFS_POST_BUILD_SCRIPT="board/jetson-tk1/post-build.sh"
 
 # Architecture
