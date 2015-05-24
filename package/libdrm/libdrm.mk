@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LIBDRM_VERSION = 31d0c9cc982dacbb087b795636d4f6375a9734c3
+LIBDRM_VERSION = a1acffd4e0968ffa65b673163574188a00c9ab7e
 LIBDRM_SITE = $(call github,Gnurou,drm,$(LIBDRM_VERSION))
 LIBDRM_LICENSE = MIT
 
@@ -13,6 +13,7 @@ LIBDRM_INSTALL_STAGING = YES
 
 LIBDRM_DEPENDENCIES = \
 	libpthread-stubs \
+	xutil_util-macros \
 	host-pkgconf
 
 LIBDRM_CONF_OPTS = \
