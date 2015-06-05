@@ -6,6 +6,7 @@
 
 GDB_VERSION = $(call qstrip,$(BR2_GDB_VERSION))
 GDB_SITE = $(BR2_GNU_MIRROR)/gdb
+GDB_SOURCE = gdb-$(GDB_VERSION).tar.xz
 
 ifeq ($(BR2_arc),y)
 GDB_SITE = $(call github,foss-for-synopsys-dwc-arc-processors,binutils-gdb,$(GDB_VERSION))
@@ -19,17 +20,11 @@ GDB_SOURCE = gdb-$(GDB_VERSION).tar.gz
 GDB_FROM_GIT = y
 endif
 
-ifeq ($(GDB_VERSION),6.7.1-avr32-2.1.5)
-GDB_SITE = ftp://www.at91.com/pub/buildroot
+# Use .tar.bz2 for 7.7.x since there was no .tar.xz release back then
+ifneq ($(filter 7.7.%,$(GDB_VERSION)),)
+GDB_SOURCE = gdb-$(GDB_VERSION).tar.bz2
 endif
 
-# Starting from 7.8.x, bz2 tarballs no longer available, use .tar.xz
-# instead.
-ifneq ($(filter 7.8.%,$(GDB_VERSION)),)
-GDB_SOURCE = gdb-$(GDB_VERSION).tar.xz
-endif
-
-GDB_SOURCE ?= gdb-$(GDB_VERSION).tar.bz2
 GDB_LICENSE = GPLv2+ LGPLv2+ GPLv3+ LGPLv3+
 GDB_LICENSE_FILES = COPYING COPYING.LIB COPYING3 COPYING3.LIB
 
@@ -91,16 +86,16 @@ GDB_CONF_OPTS = \
 	--enable-static
 
 ifeq ($(BR2_PACKAGE_GDB_TUI),y)
-	GDB_CONF_OPTS += --enable-tui
+GDB_CONF_OPTS += --enable-tui
 else
-	GDB_CONF_OPTS += --disable-tui
+GDB_CONF_OPTS += --disable-tui
 endif
 
 ifeq ($(BR2_PACKAGE_GDB_PYTHON),y)
-	GDB_CONF_OPTS += --with-python=$(TOPDIR)/package/gdb/gdb-python-config
-	GDB_DEPENDENCIES += python
+GDB_CONF_OPTS += --with-python=$(TOPDIR)/package/gdb/gdb-python-config
+GDB_DEPENDENCIES += python
 else
-	GDB_CONF_OPTS += --without-python
+GDB_CONF_OPTS += --without-python
 endif
 
 # This removes some unneeded Python scripts and XML target description
@@ -129,12 +124,9 @@ endif
 #  * --target, because we're doing a cross build rather than a real
 #    host build.
 #  * --enable-static because gdb really wants to use libbfd.a
-#  * --disable-shared, otherwise the old 6.7 version specific to AVR32
-#    doesn't build because it wants to link a shared libbfd.so against
-#    non-PIC liberty.a.
 HOST_GDB_CONF_OPTS = \
 	--target=$(GNU_TARGET_NAME) \
-	--enable-static --disable-shared \
+	--enable-static \
 	--without-uiout \
 	--disable-gdbtk \
 	--without-x \
@@ -145,19 +137,20 @@ HOST_GDB_CONF_OPTS = \
 	--disable-sim
 
 ifeq ($(BR2_PACKAGE_HOST_GDB_TUI),y)
-	HOST_GDB_CONF_OPTS += --enable-tui
+HOST_GDB_CONF_OPTS += --enable-tui
 else
-	HOST_GDB_CONF_OPTS += --disable-tui
+HOST_GDB_CONF_OPTS += --disable-tui
 endif
 
 ifeq ($(BR2_PACKAGE_HOST_GDB_PYTHON),y)
-	HOST_GDB_CONF_OPTS += --with-python=$(HOST_DIR)/usr/bin/python2
-	HOST_GDB_DEPENDENCIES += host-python
+HOST_GDB_CONF_OPTS += --with-python=$(HOST_DIR)/usr/bin/python2
+HOST_GDB_DEPENDENCIES += host-python
 else
-	HOST_GDB_CONF_OPTS += --without-python
+HOST_GDB_CONF_OPTS += --without-python
 endif
 
 ifeq ($(GDB_FROM_GIT),y)
+GDB_DEPENDENCIES += host-texinfo
 HOST_GDB_DEPENDENCIES += host-texinfo
 else
 # don't generate documentation

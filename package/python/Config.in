@@ -1,18 +1,19 @@
+comment "python needs a toolchain w/ wchar, threads, dynamic library"
+	depends on BR2_USE_MMU
+	depends on !BR2_USE_WCHAR || !BR2_TOOLCHAIN_HAS_THREADS || BR2_STATIC_LIBS
+
 config BR2_PACKAGE_PYTHON
 	bool "python"
 	depends on BR2_USE_WCHAR
 	# uses fork()
 	depends on BR2_USE_MMU
 	depends on BR2_TOOLCHAIN_HAS_THREADS # libffi
+	depends on !BR2_STATIC_LIBS
 	select BR2_PACKAGE_LIBFFI
 	help
 	  The python language interpreter.
 
 	  http://www.python.org/
-
-comment "python needs a toolchain w/ wchar, threads"
-	depends on BR2_USE_MMU
-	depends on !BR2_USE_WCHAR || !BR2_TOOLCHAIN_HAS_THREADS
 
 if BR2_PACKAGE_PYTHON
 
@@ -65,12 +66,6 @@ config BR2_PACKAGE_PYTHON_OSSAUDIODEV
 	help
 	  ossaudiodev module for Python.
 
-config BR2_PACKAGE_PYTHON_PYEXPAT
-	select BR2_PACKAGE_EXPAT
-	bool "pyexpat"
-	help
-	  pyexpat module for Python.
-
 config BR2_PACKAGE_PYTHON_READLINE
 	select BR2_PACKAGE_READLINE
 	bool "readline"
@@ -113,6 +108,12 @@ config BR2_PACKAGE_PYTHON_SQLITE
 	select BR2_PACKAGE_SQLITE
 	help
 	  SQLite database support
+
+config BR2_PACKAGE_PYTHON_PYEXPAT
+	select BR2_PACKAGE_EXPAT
+	bool "xml module"
+	help
+	  pyexpat and xml libraries for Python
 
 config BR2_PACKAGE_PYTHON_ZLIB
 	bool "zlib module"
