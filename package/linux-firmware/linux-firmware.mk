@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LINUX_FIRMWARE_VERSION = 6d9a549b086ef473d859292b81c0a5a720647863
+LINUX_FIRMWARE_VERSION = 3823fe448fe550a51db1d206a46a2c1a9cea3ec0
 LINUX_FIRMWARE_SITE = https://github.com/Gnurou/linux-firmware.git
 LINUX_FIRMWARE_SITE_METHOD = git
 
