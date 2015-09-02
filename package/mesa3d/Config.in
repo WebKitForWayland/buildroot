@@ -86,9 +86,9 @@ config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_FREEDRENO
 	  Supports (all?) Adreno GPUs.
 
 comment "DRI drivers need X.Org"
-	depends on !BR2_PACKAGE_XORG7
+	depends on !BR2_PACKAGE_XORG7 && !BR2_PACKAGE_WAYLAND
 
-if BR2_PACKAGE_XORG7
+if BR2_PACKAGE_XORG7 || BR2_PACKAGE_WAYLAND
 
 comment "DRI drivers"
 
