@@ -99,9 +99,9 @@ CAIRO_CONF_OPTS += --disable-xlib --disable-xcb --without-x
 endif
 
 ifeq ($(BR2_PACKAGE_WAYLAND),y)
-	CAIRO_CONF_OPTS += --enable-egl
+CAIRO_CONF_OPTS += --enable-egl
 else
-	CAIRO_CONF_OPTS += --disable-egl
+CAIRO_CONF_OPTS += --disable-egl
 endif
 
 ifeq ($(BR2_PACKAGE_XLIB_LIBXRENDER),y)

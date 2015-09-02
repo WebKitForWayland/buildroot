@@ -20,6 +20,8 @@ LIBDRM_CONF_OPTS = \
 	--disable-cairo-tests \
 	--disable-manpages
 
+LIBDRM_CONF_ENV = ac_cv_prog_cc_c99='-std=gnu99'
+
 ifeq ($(BR2_PACKAGE_LIBDRM_INTEL),y)
 LIBDRM_CONF_OPTS += --enable-intel
 LIBDRM_DEPENDENCIES += libatomic_ops libpciaccess
@@ -74,6 +76,13 @@ LIBDRM_CONF_OPTS += --enable-udev
 LIBDRM_DEPENDENCIES += udev
 else
 LIBDRM_CONF_OPTS += --disable-udev
+endif
+
+ifeq ($(BR2_PACKAGE_VALGRIND),y)
+LIBDRM_CONF_OPTS += --enable-valgrind
+LIBDRM_DEPENDENCIES += valgrind
+else
+LIBDRM_CONF_OPTS += --disable-valgrind
 endif
 
 ifeq ($(BR2_PACKAGE_LIBDRM_INSTALL_TESTS),y)
