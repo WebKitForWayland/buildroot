@@ -17,6 +17,7 @@ WPE_DEPENDENCIES = host-flex host-bison host-gperf host-ruby ruby \
 
 WPE_CONF_OPTS = -DPORT=WPE -DCMAKE_BUILD_TYPE=Release \
  -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Wno-cast-align" \
- -DCMAKE_CXX_FLAGS_RELEASE="-O2 -DNDEBUG -Wno-cast-align"
+ -DCMAKE_CXX_FLAGS_RELEASE="-O2 -DNDEBUG -Wno-cast-align" \
+ -DENABLE_TOOLS=ON
 
 $(eval $(cmake-package))
