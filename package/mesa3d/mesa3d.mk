@@ -134,6 +134,7 @@ ifeq ($(BR2_PACKAGE_XORG7),y)
 MESA3D_EGL_PLATFORMS += x11
 endif
 MESA3D_CONF_OPTS += \
+	--enable-dri \
 	--enable-gbm \
 	--enable-egl \
 	--with-egl-platforms=$(subst $(space),$(comma),$(MESA3D_EGL_PLATFORMS))
