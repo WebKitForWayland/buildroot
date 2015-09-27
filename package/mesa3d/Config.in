@@ -85,6 +85,13 @@ config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_FREEDRENO
 	help
 	  Supports (all?) Adreno GPUs.
 
+config BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_VC4
+	bool "Gallium VC4 driver"
+	depends on BR2_arm
+	select BR2_PACKAGE_MESA3D_GALLIUM_DRIVER
+	help
+	  Supports the VC4 GPU.
+
 comment "DRI drivers need X.Org"
 	depends on !BR2_PACKAGE_XORG7 && !BR2_PACKAGE_WAYLAND
 
