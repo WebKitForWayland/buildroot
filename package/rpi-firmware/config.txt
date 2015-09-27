@@ -4,7 +4,7 @@
 # See http://buildroot.org/manual.html#rootfs-custom
 # and http://elinux.org/RPiconfig for a description of config.txt syntax
 
-kernel=zImage
+kernel=zImage-dt
 
 # To use an external initramfs file
 #initramfs rootfs.cpio.gz
