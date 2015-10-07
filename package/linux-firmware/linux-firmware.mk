@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-LINUX_FIRMWARE_VERSION = 3823fe448fe550a51db1d206a46a2c1a9cea3ec0
-LINUX_FIRMWARE_SITE = https://github.com/Gnurou/linux-firmware.git
+LINUX_FIRMWARE_VERSION = f88e5c2e2ff57026ce8028ba4dde8e7325f251a4
+LINUX_FIRMWARE_SITE = https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git
 LINUX_FIRMWARE_SITE_METHOD = git
 
 # Intel SST DSP
@@ -307,15 +307,7 @@ endif
 
 # gk20a
 ifeq ($(BR2_PACKAGE_LINUX_FIRMWARE_NVIDIA_GK20A),y)
-LINUX_FIRMWARE_FILES += \
-	nouveau/nvea_fuc409c \
-	nouveau/nvea_fuc409d \
-	nouveau/nvea_fuc41ac \
-	nouveau/nvea_fuc41ad \
-	nouveau/nvea_bundle \
-	nouveau/nvea_method \
-	nouveau/nvea_sw_ctx \
-	nouveau/nvea_sw_nonctx
+LINUX_FIRMWARE_DIRS += nvidia
 # No license file; the license is in the file WHENCE
 # which is installed unconditionally
 endif
