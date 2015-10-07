@@ -1,1 +1,2 @@
-sha256	2b0315419d276e8424725d49e4feb0c14f2abbc16e7924fd902f10a168759bd1	mesa3d-06849fd95f443ffa4e3721bc6378d0a72dbc8618.tar.gz
+# From http://lists.freedesktop.org/archives/mesa-announce/2015-September/000173.html
+sha256	e095a3eb2eca9dfde7efca8946527c8ae20a0cc938a8c78debc7f158ad44af32	mesa-11.0.0.tar.xz
