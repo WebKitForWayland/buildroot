@@ -12,8 +12,9 @@ endif
 
 # Not possible to directly refer to mesa3d variables, because of
 # first/second expansion trickery...
-MESA3D_HEADERS_VERSION = 3ecbca3f3a25aeade7e6c973f377130c0fe1f2a1
-MESA3D_HEADERS_SITE = $(call github,WebKitForWayland,mesa,$(MESA3D_VERSION))
+MESA3D_HEADERS_VERSION = 11.0.2
+MESA3D_HEADERS_SOURCE = mesa-$(MESA3D_VERSION).tar.xz
+MESA3D_HEADERS_SITE = ftp://ftp.freedesktop.org/pub/mesa/$(MESA3D_VERSION)
 MESA3D_HEADERS_LICENSE = MIT, SGI, Khronos
 MESA3D_HEADERS_LICENSE_FILES = docs/license.html
 
