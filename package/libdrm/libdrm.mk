@@ -4,15 +4,17 @@
 #
 ################################################################################
 
-LIBDRM_VERSION = 2.4.62
+LIBDRM_VERSION = 2.4.65
 LIBDRM_SOURCE = libdrm-$(LIBDRM_VERSION).tar.bz2
 LIBDRM_SITE = http://dri.freedesktop.org/libdrm
 LIBDRM_LICENSE = MIT
 
+LIBDRM_AUTORECONF = YES
 LIBDRM_INSTALL_STAGING = YES
 
 LIBDRM_DEPENDENCIES = \
 	libpthread-stubs \
+	xutil_util-macros \
 	host-pkgconf
 
 LIBDRM_CONF_OPTS = \
@@ -59,9 +61,9 @@ LIBDRM_CONF_OPTS += --disable-exynos-experimental-api
 endif
 
 ifeq ($(BR2_PACKAGE_LIBDRM_FREEDRENO),y)
-LIBDRM_CONF_OPTS += --enable-freedreno-experimental-api
+LIBDRM_CONF_OPTS += --enable-freedreno
 else
-LIBDRM_CONF_OPTS += --disable-freedreno-experimental-api
+LIBDRM_CONF_OPTS += --disable-freedreno
 endif
 
 ifeq ($(BR2_PACKAGE_HAS_UDEV),y)
