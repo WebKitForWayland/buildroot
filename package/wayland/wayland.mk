@@ -14,7 +14,7 @@ WAYLAND_INSTALL_STAGING = YES
 WAYLAND_DEPENDENCIES = libffi host-pkgconf host-wayland expat
 
 # wayland-scanner is only needed for building, not on the target
-WAYLAND_CONF_OPTS = --disable-scanner
+WAYLAND_CONF_OPTS = --with-host-scanner
 
 # We must provide a specialy-crafted wayland-scanner .pc file
 # which we vampirise and adapt from the host-wayland copy
