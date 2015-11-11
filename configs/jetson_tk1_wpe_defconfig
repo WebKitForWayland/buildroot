@@ -11,8 +11,7 @@ BR2_ARM_FPU_VFPV4=y
 BR2_ARM_INSTRUCTIONS_THUMB2=y
 
 # Compiler
-BR2_GCC_VERSION_4_9_X=y
-BR2_GCC_VERSION="4.9.2"
+BR2_GCC_VERSION_5_X=y
 BR2_OPTIMIZE_2=y
 BR2_TARGET_OPTIMIZATION="-pipe -mabi=aapcs-linux -mfloat-abi=hard -mcpu=cortex-a15 -mfpu=vfpv4 -mthumb"
 
