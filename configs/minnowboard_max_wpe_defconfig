@@ -8,8 +8,7 @@ BR2_SYSTEM_DHCP="enp2s0"
 BR2_ROOTFS_POST_BUILD_SCRIPT="board/minnowboard-max/post-build.sh"
 
 # Compiler
-BR2_GCC_VERSION_4_9_X=y
-BR2_GCC_VERSION="4.9.2"
+BR2_GCC_VERSION_5_X=y
 BR2_OPTIMIZE_2=y
 
 # Lock to 3.17 headers to avoid breaking with newer kernels
