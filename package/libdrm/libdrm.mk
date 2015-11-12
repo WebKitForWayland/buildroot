@@ -9,10 +9,12 @@ LIBDRM_SOURCE = libdrm-$(LIBDRM_VERSION).tar.bz2
 LIBDRM_SITE = http://dri.freedesktop.org/libdrm
 LIBDRM_LICENSE = MIT
 
+LIBDRM_AUTORECONF = YES
 LIBDRM_INSTALL_STAGING = YES
 
 LIBDRM_DEPENDENCIES = \
 	libpthread-stubs \
+	xutil_util-macros \
 	host-pkgconf
 
 LIBDRM_CONF_OPTS = \

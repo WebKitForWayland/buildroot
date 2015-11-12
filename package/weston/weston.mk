@@ -4,8 +4,9 @@
 #
 ################################################################################
 
-WESTON_VERSION = d32748b3d16a7e6dae9743d3becbcbbd0d7eb210
-WESTON_SITE = $(call github,WebKitForWayland,weston,$(WESTON_VERSION))
+WESTON_VERSION = 1.9.0
+WESTON_SITE = http://wayland.freedesktop.org/releases
+WESTON_SOURCE = weston-$(WESTON_VERSION).tar.xz
 WESTON_LICENSE = MIT
 WESTON_LICENSE_FILES = COPYING
 
