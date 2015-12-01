@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-KMSCUBE_VERSION = b4d79d5c4e27b6d37234a137bdefc6ff517d6ea4
-KMSCUBE_SITE = git://gitorious.org/thierryreding/kmscube.git
+KMSCUBE_VERSION = 5bccc25921d669f444d470d93a0f6dfdbd5a5a2d
+KMSCUBE_SITE = https://github.com/Gnurou/kmscube.git
 
 KMSCUBE_INSTALL_STAGING = YES
 KMSCUBE_DEPENDENCIES = libdrm mesa3d
