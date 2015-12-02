@@ -13,7 +13,6 @@ BR2_ARM_INSTRUCTIONS_THUMB2=y
 # Compiler
 BR2_GCC_VERSION_5_X=y
 BR2_OPTIMIZE_2=y
-BR2_TARGET_OPTIMIZATION="-pipe -mabi=aapcs-linux -mfloat-abi=hard -mcpu=cortex-a15 -mfpu=vfpv4 -mthumb"
 
 # Linux kernel
 BR2_LINUX_KERNEL=y
