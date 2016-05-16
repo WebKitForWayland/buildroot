@@ -56,13 +56,16 @@ XSERVER_XORG_SERVER_DEPENDENCIES = 	\
 	mcookie 			\
 	host-pkgconf
 
+# We force -O2 regardless of the optimization level chosen by the
+# user, as the X.org server is known to trigger some compiler bugs at
+# -Os on several architectures.
 XSERVER_XORG_SERVER_CONF_OPTS = \
 	--disable-config-hal \
 	--disable-xnest \
 	--disable-xephyr \
 	--disable-dmx \
 	--with-builder-addr=buildroot@buildroot.org \
-	CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include/pixman-1" \
+	CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include/pixman-1 -O2" \
 	--with-fontrootdir=/usr/share/fonts/X11/ \
 	--$(if $(BR2_PACKAGE_XSERVER_XORG_SERVER_XVFB),en,dis)able-xvfb
 
@@ -130,8 +133,7 @@ else # modular
 XSERVER_XORG_SERVER_CONF_OPTS += --disable-kdrive --disable-xfbdev
 endif
 
-# libdrm locking macros use armv6+ instructions on arm
-ifeq ($(BR2_PACKAGE_MESA3D_DRI_DRIVER)n$(BR2_ARM_CPU_ARMV4)$(BR2_ARM_CPU_ARMV5),yn)
+ifeq ($(BR2_PACKAGE_MESA3D_DRI_DRIVER),y)
 XSERVER_XORG_SERVER_CONF_OPTS += --enable-dri --enable-glx
 XSERVER_XORG_SERVER_DEPENDENCIES += mesa3d xproto_xf86driproto
 else

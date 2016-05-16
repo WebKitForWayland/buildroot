@@ -1,2 +1,2 @@
-# From: http://lists.freedesktop.org/archives/wayland-devel/2015-September/024302.html
-sha256  9c8770720aa0034479735f58a4dc4ca9b172ecfede28f5134312e135b7301efa wayland-1.9.0.tar.xz
+# From https://lists.freedesktop.org/archives/wayland-devel/2016-February/027038.html
+sha256  4bf6e790aa6f50ab3825676282ecd75850ec9c4767af96ecb7127b1f3c3d60dc	wayland-1.10.0.tar.xz
