@@ -4,7 +4,7 @@
 # See http://buildroot.org/manual.html#rootfs-custom
 # and http://elinux.org/RPiconfig for a description of config.txt syntax
 
-kernel=zImage-dt
+kernel=zImage
 
 # To use an external initramfs file
 #initramfs rootfs.cpio.gz
@@ -18,7 +18,3 @@ disable_overscan=1
 gpu_mem_256=100
 gpu_mem_512=100
 gpu_mem_1024=100
-
-mask_gpu_interrupt0=0x400
-avoid_warnings=2
-dtparam=spi=on

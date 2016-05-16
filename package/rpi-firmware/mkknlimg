@@ -1,7 +1,4 @@
 #!/usr/bin/env perl
-# ----------------------------------------------------------------------
-# mkknlimg by Phil Elwell for Raspberry Pi
-# based on extract-ikconfig by Dick Streefland
 #
 # Originaly from: https://github.com/raspberrypi/tools/blob/master/mkimage/mkknlimg
 # Original cset : f5642106425d430e1f82ee064121a5fd0e05a386
