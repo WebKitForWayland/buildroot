@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LIBDRM_VERSION = 2.4.65
+LIBDRM_VERSION = 2.4.66
 LIBDRM_SOURCE = libdrm-$(LIBDRM_VERSION).tar.bz2
 LIBDRM_SITE = http://dri.freedesktop.org/libdrm
 LIBDRM_LICENSE = MIT
@@ -36,6 +36,12 @@ else
 LIBDRM_CONF_OPTS += --disable-radeon
 endif
 
+ifeq ($(BR2_PACKAGE_LIBDRM_AMDGPU),y)
+LIBDRM_CONF_OPTS += --enable-amdgpu
+else
+LIBDRM_CONF_OPTS += --disable-amdgpu
+endif
+
 ifeq ($(BR2_PACKAGE_LIBDRM_NOUVEAU),y)
 LIBDRM_CONF_OPTS += --enable-nouveau
 else
@@ -64,6 +70,12 @@ ifeq ($(BR2_PACKAGE_LIBDRM_FREEDRENO),y)
 LIBDRM_CONF_OPTS += --enable-freedreno
 else
 LIBDRM_CONF_OPTS += --disable-freedreno
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_TEGRA),y)
+LIBDRM_CONF_OPTS += --enable-tegra-experimental-api
+else
+LIBDRM_CONF_OPTS += --disable-tegra-experimental-api
 endif
 
 ifeq ($(BR2_PACKAGE_HAS_UDEV),y)
