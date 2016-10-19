@@ -11,6 +11,11 @@ CAIRO_LICENSE_FILES = COPYING
 CAIRO_INSTALL_STAGING = YES
 CAIRO_AUTORECONF = YES
 
+# relocation truncated to fit: R_68K_GOT16O
+ifeq ($(BR2_m68k_cf),y)
+CAIRO_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -mxgot"
+endif
+
 define CAIRO_MAKEFILE_AM_FEATURES
 	cd $(@D) && touch boilerplate/Makefile.am.features src/Makefile.am.features
 endef
